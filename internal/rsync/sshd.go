@@ -59,11 +59,11 @@ func CreateSshdPodWaitTillRunning(logger *log.Entry, kubeClient kubernetes.Inter
 				if newPod.Namespace == pod.Namespace && newPod.Name == pod.Name {
 					switch newPod.Status.Phase {
 					case corev1.PodRunning:
-						logger.Info("Sshd pod running")
+						logger.Info(":rocket: Sshd pod started")
 						running <- true
 
 					case corev1.PodFailed, corev1.PodUnknown:
-						logger.Error("Sshd pod failed")
+						logger.Error(":cross_mark: Sshd pod failed")
 						running <- false
 					}
 				}
@@ -72,13 +72,13 @@ func CreateSshdPodWaitTillRunning(logger *log.Entry, kubeClient kubernetes.Inter
 	)
 	sharedInformerFactory.Start(stopCh)
 
-	logger.Info("Creating sshd pod")
+	logger.Info(":rocket: Creating sshd pod")
 	_, err := kubeClient.CoreV1().Pods(pod.Namespace).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
 
-	logger.Info("Waiting for the sshd pod to start running")
+	logger.Info(":hourglass_not_done: Waiting for the sshd pod to start running")
 	if !<-running {
 		return errors.New("sshd pod failed to start")
 	}
@@ -105,7 +105,8 @@ func createSshdPublicKeySecret(instanceId string, sourcePvcInfo *pvc.Info, publi
 	return secrets.Create(context.TODO(), &secret, metav1.CreateOptions{})
 }
 
-func PrepareSshdPod(instanceId string, sourcePvcInfo *pvc.Info, publicKeySecretName string, sshdImage string) *corev1.Pod {
+func PrepareSshdPod(instanceId string, sourcePvcInfo *pvc.Info, publicKeySecretName string,
+	sshdImage string, mountReadOnly bool) *corev1.Pod {
 	podName := "pv-migrate-sshd-" + instanceId
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -120,7 +121,7 @@ func PrepareSshdPod(instanceId string, sourcePvcInfo *pvc.Info, publicKeySecretN
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 							ClaimName: sourcePvcInfo.Claim.Name,
-							ReadOnly:  true,
+							ReadOnly:  mountReadOnly,
 						},
 					},
 				},
@@ -147,7 +148,7 @@ func PrepareSshdPod(instanceId string, sourcePvcInfo *pvc.Info, publicKeySecretN
 						{
 							Name:      "source-vol",
 							MountPath: "/source",
-							ReadOnly:  true,
+							ReadOnly:  mountReadOnly,
 						},
 						{
 							Name:      "public-key-vol",

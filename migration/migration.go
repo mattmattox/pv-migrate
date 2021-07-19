@@ -1,10 +1,15 @@
 package migration
 
+import (
+	log "github.com/sirupsen/logrus"
+)
+
 const (
-	DefaultRsyncImage    = "docker.io/utkuozdemir/pv-migrate-rsync:alpine-3-20210522"
-	DefaultSshdImage     = "docker.io/utkuozdemir/pv-migrate-sshd:alpine-3-20210522"
-	DefaultIgnoreMounted = false
-	DefaultNoChown       = false
+	DefaultRsyncImage          = "docker.io/utkuozdemir/pv-migrate-rsync:alpine-3-20210522"
+	DefaultSshdImage           = "docker.io/utkuozdemir/pv-migrate-sshd:alpine-3-20210522"
+	DefaultIgnoreMounted       = false
+	DefaultNoChown             = false
+	DefaultSourceMountReadOnly = true
 )
 
 type PVC struct {
@@ -12,6 +17,7 @@ type PVC struct {
 	Context        string
 	Namespace      string
 	Name           string
+	Path           string
 }
 
 type Migration struct {
@@ -21,11 +27,13 @@ type Migration struct {
 	Strategies []string
 	RsyncImage string
 	SshdImage  string
+	Logger     *log.Entry
 }
 
 type Options struct {
 	DeleteExtraneousFiles bool
 	IgnoreMounted         bool
 	NoChown               bool
+	SourceMountReadOnly   bool
 	KeyAlgorithm          string
 }

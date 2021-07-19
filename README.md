@@ -45,7 +45,7 @@ Simply create the PVC with the same name and manifest in `ns-b` and use `pv-migr
 from one Kubernetes cluster to the other.  
 Both clusters have internet access and the source cluster supports `LoadBalancer` type services with public IPs.  
 Just use `pv-migrate` to clone the data **securely over the internet**.
-  
+
 ## Highlights
 
 - Supports in-namespace, in-cluster as well as cross-cluster migrations
@@ -55,6 +55,10 @@ Just use `pv-migrate` to clone the data **securely over the internet**.
 - Supports multiple migration strategies to do the migration efficiently and fallback to other strategies when needed
 - Customizable strategy order
 - Supports arm32v7 (Raspberry Pi etc.) and arm64 architectures as well as amd64
+
+## Demo
+
+![pv-migrate demo GIF](img/demo.gif)
 
 ## Installation
 
@@ -82,7 +86,7 @@ scoop install pv-migrate/pv-migrate
 
 Sample steps for MacOS:
 ```bash
-$ VERSION=0.5.8
+$ VERSION=0.5.10
 $ wget https://github.com/utkuozdemir/pv-migrate/releases/download/v${VERSION}/pv-migrate_${VERSION}_darwin_x86_64.tar.gz
 $ tar -xvzf pv-migrate_${VERSION}_darwin_x86_64.tar.gz
 $ mv pv-migrate /usr/local/bin
@@ -95,7 +99,7 @@ Alternatively, you can use the
 [official Docker images](https://hub.docker.com/repository/docker/utkuozdemir/pv-migrate) 
 that come with the `pv-migrate` binary pre-installed:
 ```bash
-docker run --rm -it utkuozdemir/pv-migrate:0.5.8 pv-migrate migrate ...
+docker run --rm -it utkuozdemir/pv-migrate:0.5.10 pv-migrate migrate ...
 ```
 
 ## Usage
@@ -113,8 +117,10 @@ COMMANDS:
    help, h     Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --help, -h     show help (default: false)
-   --version, -v  print the version (default: false)
+   --help, -h                    show help (default: false)
+   --version, -v                 print the version (default: false)
+   --log-level value, -l value   Log level. Must be one of: trace, debug, info, warn, error, fatal, panic (default: "info")
+   --log-format value, -f value  Log format. Must be one of: json, fancy (default: "fancy")
 ```
 
 
@@ -130,9 +136,12 @@ OPTIONS:
    --source-kubeconfig value, -k value  Path of the kubeconfig file of the source PVC (default: ~/.kube/config or KUBECONFIG env variable)
    --source-context value, -c value     Context in the kubeconfig file of the source PVC (default: currently selected context in the source kubeconfig)
    --source-namespace value, -n value   Namespace of the source PVC (default: currently selected namespace in the source context)
+   --source-path value, -p value        The filesystem path to migrate in the the source PVC (default: "/")
+   --source-mount-read-only, -R         Mount the source PVC in ReadOnly mode (default: true)
    --dest-kubeconfig value, -K value    Path of the kubeconfig file of the destination PVC (default: ~/.kube/config or KUBECONFIG env variable)
    --dest-context value, -C value       Context in the kubeconfig file of the destination PVC (default: currently selected context in the destination kubeconfig)
    --dest-namespace value, -N value     Namespace of the destination PVC (default: currently selected namespace in the destination context)
+   --dest-path value, -P value          The filesystem path to migrate in the the dest PVC (default: "/")
    --dest-delete-extraneous-files, -d   Delete extraneous files on the destination by using rsync's '--delete' flag (default: false)
    --ignore-mounted, -i                 Do not fail if the source or destination PVC is mounted (default: false)
    --no-chown, -o                       Omit chown on rsync (default: false)
