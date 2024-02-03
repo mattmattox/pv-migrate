@@ -74,7 +74,7 @@ jobs:
       - name: Install cilium-cli
         env:
           # renovate: depName=cilium/cilium-cli datasource=github-releases
-          CILIUM_CLI_VERSION: v0.15.20
+          CILIUM_CLI_VERSION: v0.15.22
         run: |
           wget https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-amd64.tar.gz
           sudo tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
@@ -85,7 +85,7 @@ jobs:
         with:
           cluster_name: kind-1
           # renovate: depName=kubernetes-sigs/kind datasource=github-releases
-          version: v0.20.0
+          version: v0.21.0
           config: test/kind-config.yaml
       - name: kind-1 - Create metallb-system namespace
         run: kubectl create namespace metallb-system --dry-run=client -oyaml | kubectl apply -f -
@@ -99,7 +99,7 @@ jobs:
       - name: kind-1 - Install MetalLB
         env:
           # renovate: depName=metallb datasource=helm registryUrl=https://charts.bitnami.com/bitnami
-          METALLB_CHART_VERSION: 4.11.1
+          METALLB_CHART_VERSION: 4.11.5
         run: |
           MANIFESTS_PATH=/tmp/metallb-manifests.yaml
           
@@ -138,7 +138,7 @@ jobs:
         with:
           cluster_name: kind-2
           # renovate: depName=kubernetes-sigs/kind datasource=github-releases
-          version: v0.20.0
+          version: v0.21.0
           config: test/kind-config.yaml
       - name: kind-2 - Install allow-all network policies on system namespaces
         env:
@@ -166,6 +166,6 @@ jobs:
           PVMIG_TEST_EXTRA_KUBECONFIG: /home/runner/.kube/kind-2.yaml
         run: richgo test -tags integration -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic -timeout 20m -v ./...
       - name: Send coverage
-        uses: codecov/codecov-action@v4.0.0
+        uses: codecov/codecov-action@v4.0.1
         with:
           files: coverage.txt
