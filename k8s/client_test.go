@@ -5,20 +5,25 @@ import (
 	"os"
 	"testing"
 
+	"github.com/neilotoole/slogt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 //go:embed testdata/_kubeconfig_test.yaml
-var kubeconfig string
+var kubeconfigContent string
 
 func TestGetClusterClient(t *testing.T) {
 	t.Parallel()
 
-	c := prepareKubeconfig()
-	defer func() { _ = os.Remove(c) }()
+	kubeconfig := prepareKubeconfig()
+	defer func() {
+		os.Remove(kubeconfig)
+	}()
 
-	clusterClient, err := GetClusterClient(c, "context-1")
+	logger := slogt.New(t)
+
+	clusterClient, err := GetClusterClient(kubeconfig, "context-1", logger)
 
 	require.NoError(t, err)
 
@@ -49,15 +54,17 @@ func TestBuildK8sConfig(t *testing.T) {
 		_ = os.Remove(conf)
 	}()
 
-	config, _, namespace, err := buildK8sConfig(conf, "")
+	logger := slogt.New(t)
+
+	config, _, namespace, err := buildK8sConfig(conf, "", logger)
 	assert.NotNil(t, config)
 	assert.Equal(t, "namespace1", namespace)
 	require.NoError(t, err)
-	config, _, namespace, err = buildK8sConfig(conf, "context-2")
+	config, _, namespace, err = buildK8sConfig(conf, "context-2", logger)
 	require.NoError(t, err)
 	assert.Equal(t, "namespace2", namespace)
 	assert.NotNil(t, config)
-	config, _, namespace, err = buildK8sConfig(conf, "context-nonexistent")
+	config, _, namespace, err = buildK8sConfig(conf, "context-nonexistent", logger)
 	assert.Nil(t, config)
 	assert.Equal(t, "", namespace)
 	require.Error(t, err)
@@ -65,7 +72,8 @@ func TestBuildK8sConfig(t *testing.T) {
 
 func prepareKubeconfig() string {
 	testConfig, _ := os.CreateTemp("", "pv-migrate-testconfig-*.yaml")
-	_, _ = testConfig.WriteString(kubeconfig)
+
+	testConfig.WriteString(kubeconfigContent) //nolint:errcheck
 
 	return testConfig.Name()
 }

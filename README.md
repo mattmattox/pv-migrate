@@ -16,6 +16,13 @@
 `pv-migrate` is a CLI tool/kubectl plugin to easily migrate 
 the contents of one Kubernetes `PersistentVolumeClaim` to another.
 
+---
+
+> [!WARNING]
+> I get that it can be frustrating not to hear back about the stuff you've brought up or the changes you've suggested. But honestly, for over a year now, I've hardly had any time to keep up with my personal open-source projects, including this one. I am still committed to keep this tool working and slowly move it forward, but please bear with me if I can't tackle your fixes or check out your code for a while. Thanks for your understanding.
+
+---
+
 ## Demo
 
 ![pv-migrate demo GIF](img/demo.gif)
@@ -46,6 +53,11 @@ Simply create the PVC with the same name and manifest in `ns-b` and use `pv-migr
 and you need to move the data from one Kubernetes cluster to the other.  
 Just use `pv-migrate` to copy the data **securely over the internet**.
 
+:arrow_right: You need to change the `StorageClass` of a volume, for instance,
+from a `ReadWriteOnce` one like `local-path`) to a `ReadWriteMany` like NFS.
+As the `storageClass` is not editable, you can use `pv-migrate` to transfer
+the data from the old PVC to the new one with the desired StorageClass.
+
 ## Highlights
 
 - Supports in-namespace, in-cluster as well as cross-cluster migrations
@@ -68,7 +80,13 @@ See [USAGE.md](USAGE.md) for the CLI reference and examples.
 
 # Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=utkuozdemir/pv-migrate&type=Date)](https://star-history.com/#utkuozdemir/pv-migrate&Date)
+<a href="https://star-history.com/#utkuozdemir/pv-migrate&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=utkuozdemir/pv-migrate&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=utkuozdemir/pv-migrate&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=utkuozdemir/pv-migrate&type=Date" />
+ </picture>
+</a>
 
 # Contributing
 
