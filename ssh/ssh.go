@@ -104,8 +104,12 @@ func marshalED25519PrivateKey(key ed25519.PrivateKey) ([]byte, error) {
 		return nil, fmt.Errorf("failed to generate random number: %w", err)
 	}
 
-	pk1.Check1 = uint32(rnd.Uint64())
-	pk1.Check2 = uint32(rnd.Uint64())
+	//nolint:gosec // it won't overflow, as the max value is set to math.MaxUint32
+	{
+		pk1.Check1 = uint32(rnd.Uint64())
+		pk1.Check2 = uint32(rnd.Uint64())
+	}
+
 	pk1.Keytype = ssh.KeyAlgoED25519
 
 	publicKey, ok := key.Public().(ed25519.PublicKey)
@@ -124,7 +128,7 @@ func marshalED25519PrivateKey(key ed25519.PrivateKey) ([]byte, error) {
 	padLen := (bs - (blockLen % bs)) % bs
 	pk1.Pad = make([]byte, padLen)
 
-	for i := 0; i < padLen; i++ {
+	for i := range padLen {
 		pk1.Pad[i] = byte(i + 1)
 	}
 

@@ -11,24 +11,29 @@ tasks:
       - gci write -s standard -s default -s "prefix({{.MODULE}})" .
       - gofumpt -w -l .
       - golangci-lint run --fix ./...
+      - shfmt -l -i 2 -ci -sr -w .
 
   lint:
     desc: lint code
     cmds:
       - golangci-lint run ./...
       - helm lint helm/pv-migrate
-
-  update-chart:
-    desc: update the helm chart
-    cmds:
-      - helm-docs -c helm/pv-migrate/
-      - helm package helm/pv-migrate/
-      - mv pv-migrate-*.tgz migrator/helm-chart.tgz
+      - shfmt -l -i 2 -ci -sr .
 
   clean:
     desc: clean
     cmds:
       - rm -rf {{.ROOT_DIR}}/dist/
+
+  update-usage:
+    desc: update usage
+    env:
+      USAGE:
+        sh: go run ./... --help
+    cmd: >-
+        docker run  -v {{.ROOT_DIR}}:/project -e USAGE
+        hairyhenderson/gomplate:stable
+        --file /project/USAGE.md.gotmpl --out /project/USAGE.md
 
   build:
     desc: build
