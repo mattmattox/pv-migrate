@@ -2,6 +2,7 @@
 name: build
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - master
@@ -12,7 +13,6 @@ on:
       - "test/**"
       - ".gitignore"
       - "docker/**"
-      - "helm/**"
       - "renovate.json"
       - ".krew.yaml"
   pull_request:
@@ -24,7 +24,6 @@ on:
       - "test/**"
       - ".gitignore"
       - "docker/**"
-      - "helm/**"
       - "renovate.json"
       - ".krew.yaml"
 
@@ -37,31 +36,31 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
       - name: Install go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v5.3.0
         with:
           go-version-file: go.mod
       - name: Install Task
         uses: arduino/setup-task@v2.0.0
         with:
           # renovate: depName=go-task/task datasource=github-releases
-          version: 3.39.2
+          version: 3.41.0
       - name: Tidy go.mod
         run: go mod tidy
       - name: Run linters
-        uses: golangci/golangci-lint-action@v6.1.1
+        uses: golangci/golangci-lint-action@v6.5.0
         with:
           # renovate: depName=golangci/golangci-lint datasource=github-releases
-          version: v1.61.0
+          version: v1.64.5
           args: --timeout=10m0s
           install-mode: goinstall
       - name: Build with Goreleaser
         if: ${{ always() }}
-        uses: goreleaser/goreleaser-action@v6.0.0
+        uses: goreleaser/goreleaser-action@v6.2.1
         with:
           # renovate: depName=goreleaser/goreleaser datasource=github-releases
-          version: v2.3.2
+          version: v2.7.0
           args: build --snapshot --clean --single-target
       - name: Update usage
         run: task update-usage
@@ -71,9 +70,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
       - name: Install go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v5.3.0
         with:
           go-version-file: go.mod
       - name: Install richgo
@@ -84,18 +83,18 @@ jobs:
       - name: Install cilium-cli
         env:
           # renovate: depName=cilium/cilium-cli datasource=github-releases
-          CILIUM_CLI_VERSION: v0.16.19
+          CILIUM_CLI_VERSION: v0.17.0
         run: |
           wget https://github.com/cilium/cilium-cli/releases/download/${CILIUM_CLI_VERSION}/cilium-linux-amd64.tar.gz
           sudo tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
           rm cilium-linux-amd64.tar.gz
 
       - name: kind-1 - Create cluster
-        uses: helm/kind-action@v1.10.0
+        uses: helm/kind-action@v1.12.0
         with:
           cluster_name: kind-1
           # renovate: depName=kubernetes-sigs/kind datasource=github-releases
-          version: v0.24.0
+          version: v0.27.0
           config: test/kind-config.yaml
       - name: kind-1 - Create metallb-system namespace
         run: kubectl create namespace metallb-system --dry-run=client -oyaml | kubectl apply -f -
@@ -109,7 +108,7 @@ jobs:
       - name: kind-1 - Install MetalLB
         env:
           # renovate: depName=metallb datasource=helm registryUrl=https://charts.bitnami.com/bitnami
-          METALLB_CHART_VERSION: 6.3.13
+          METALLB_CHART_VERSION: 6.4.7
         run: |
           MANIFESTS_PATH=/tmp/metallb-manifests.yaml
           
@@ -143,13 +142,13 @@ jobs:
           done
 
       - name: kind-2 - Create cluster
-        uses: helm/kind-action@v1.10.0
+        uses: helm/kind-action@v1.12.0
         env:
           KUBECONFIG: /home/runner/.kube/kind-2.yaml
         with:
           cluster_name: kind-2
           # renovate: depName=kubernetes-sigs/kind datasource=github-releases
-          version: v0.24.0
+          version: v0.27.0
           config: test/kind-config.yaml
       - name: kind-2 - Install allow-all network policies on system namespaces
         env:
@@ -177,7 +176,7 @@ jobs:
           PVMIG_TEST_EXTRA_KUBECONFIG: /home/runner/.kube/kind-2.yaml
         run: richgo test -tags integration -race -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic -timeout 20m -v ./...
       - name: Send coverage
-        uses: codecov/codecov-action@v4.6.0
+        uses: codecov/codecov-action@v5.3.1
         with:
           files: coverage.txt
           token: ${{ secrets.CODECOV_TOKEN }}

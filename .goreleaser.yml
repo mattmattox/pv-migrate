@@ -1,4 +1,5 @@
 ---
+version: 2
 before:
   hooks:
     - go mod download
@@ -45,7 +46,8 @@ archives:
       - pv-migrate
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
     files:
       - LICENSE
       - completions/*
@@ -59,6 +61,7 @@ changelog:
   filters:
     exclude:
       - '^build(\(.+\))?:'
+      - '^chore(\(.+\))?:'
       - '^cd(\(.+\))?:'
       - '^ci(\(.+\))?:'
       - '^cicd(\(.+\))?:'
@@ -73,12 +76,14 @@ changelog:
 dockers:
   - image_templates:
       - docker.io/utkuozdemir/pv-migrate:{{ .Tag }}-amd64
+      - ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}-amd64
     use: buildx
     dockerfile: Dockerfile
     build_flag_templates:
       - --platform=linux/amd64
   - image_templates:
       - docker.io/utkuozdemir/pv-migrate:{{ .Tag }}-arm64
+      - ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}-arm64
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
@@ -86,6 +91,7 @@ dockers:
       - --platform=linux/arm64
   - image_templates:
       - docker.io/utkuozdemir/pv-migrate:{{ .Tag }}-armv7
+      - ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}-armv7
     use: buildx
     goarch: arm
     goarm: "7"
@@ -99,6 +105,11 @@ docker_manifests:
       - docker.io/utkuozdemir/pv-migrate:{{ .Tag }}-amd64
       - docker.io/utkuozdemir/pv-migrate:{{ .Tag }}-arm64
       - docker.io/utkuozdemir/pv-migrate:{{ .Tag }}-armv7
+  - name_template: ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}
+    image_templates:
+      - ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}-amd64
+      - ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}-arm64
+      - ghcr.io/utkuozdemir/pv-migrate:{{ .Tag }}-armv7
 
 # To test docker image push, uncomment the following and run
 # goreleaser release --skip-validate --rm-dist --debug
@@ -112,7 +123,7 @@ brews:
       token: "{{ .Env.PRIVATE_ACCESS_TOKEN }}"
     commit_author:
       name: Utku Ozdemir
-      email: uoz@protonmail.com
+      email: utkuozdemir@gmail.com
     directory: Formula
     goarm: "7"
     homepage: https://github.com/utkuozdemir/pv-migrate
@@ -133,7 +144,7 @@ scoops:
       token: "{{ .Env.PRIVATE_ACCESS_TOKEN }}"
     commit_author:
       name: Utku Ozdemir
-      email: uoz@protonmail.com
+      email: utkuozdemir@gmail.com
     commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
     homepage: https://github.com/utkuozdemir/pv-migrate
     description: Persistent volume migration plugin for Kubernetes
